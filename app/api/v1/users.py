@@ -5,6 +5,7 @@ from app.db.session import get_db
 from app.schemas.user import UserCreate, UserResponse
 from app.services.user_service import register_user
 from app.api.deps import get_current_user
+from app.api.deps import require_admin
 from app.models.user import User
 
 
@@ -18,3 +19,11 @@ def create_user_endpoint(user: UserCreate, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+@router.get("/admin-only")
+def admin_only(
+    admin_user: User = Depends(require_admin)
+):
+    return {
+        "message": f"Welcome admin {admin_user.email}"
+    }
