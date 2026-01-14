@@ -7,9 +7,8 @@ from alembic import context
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.db.base import Base
+from app.db.base_class import Base
 from app.core.config import settings
-from app.models.user import User
 
 config = context.config
 
