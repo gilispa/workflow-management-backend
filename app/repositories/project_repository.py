@@ -28,3 +28,23 @@ def create_project_with_owner(
     db.refresh(project)
 
     return project
+
+
+def get_projects_for_user(db: Session, user_id: int):
+    return (
+        db.query(Project)
+        .join(ProjectMember)
+        .filter(ProjectMember.user_id == user_id)
+        .all()
+    )
+
+
+def get_project_by_id(
+    db: Session,
+    project_id: int,
+) -> Project | None:
+    return (
+        db.query(Project)
+        .filter(Project.id == project_id)
+        .first()
+    )
