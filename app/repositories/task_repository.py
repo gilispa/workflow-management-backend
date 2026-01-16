@@ -37,3 +37,6 @@ def update_task_status(
     db.commit()
     db.refresh(task)
     return task
+
+def get_tasks_by_project(db: Session, project_id: int) -> list[Task]:
+    return db.query(Task).filter(Task.project_id == project_id).all()

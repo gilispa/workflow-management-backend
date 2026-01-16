@@ -8,7 +8,7 @@ from app.services.task_service import create_task_for_project
 from app.models.user import User
 from app.schemas.task import TaskUpdateStatus
 from app.services.task_service import update_task_status_for_project
-from app.models.task import TaskStatus
+from app.services.task_service import get_tasks_for_project
 
 router = APIRouter(prefix="/projects/{project_id}/tasks", tags=["Tasks"])
 
@@ -46,5 +46,17 @@ def update_task_status_endpoint(
         task_id=task_id,
         project_id=project_id,
         new_status=task_in.status,
+        current_user_id=current_user.id,
+    )
+
+@router.get("", response_model=list[TaskResponse])
+def get_tasks_endpoint(
+    project_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return get_tasks_for_project(
+        db=db,
+        project_id=project_id,
         current_user_id=current_user.id,
     )

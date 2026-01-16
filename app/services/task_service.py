@@ -5,7 +5,7 @@ from app.repositories.task_repository import create_task
 from app.models.project_member import ProjectMember, ProjectRole
 from app.models.task import Task
 from app.models.user import User
-from app.repositories.task_repository import get_task_by_id, update_task_status
+from app.repositories.task_repository import get_task_by_id, update_task_status, get_tasks_by_project
 
 
 def create_task_for_project(
@@ -96,3 +96,25 @@ def update_task_status_for_project(
         task=task,
         new_status=new_status,
     )
+
+def get_tasks_for_project(
+    db: Session,
+    project_id: int,
+    current_user_id: int,
+) -> list[Task]:
+    membership = (
+        db.query(ProjectMember)
+        .filter(
+            ProjectMember.project_id == project_id,
+            ProjectMember.user_id == current_user_id,
+        )
+        .first()
+    )
+
+    if not membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this project",
+        )
+
+    return get_tasks_by_project(db, project_id)
