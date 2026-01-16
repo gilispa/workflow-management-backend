@@ -5,7 +5,8 @@ from app.repositories.task_repository import create_task
 from app.models.project_member import ProjectMember, ProjectRole
 from app.models.task import Task
 from app.models.user import User
-from app.repositories.task_repository import get_task_by_id, update_task_status, get_tasks_by_project
+from app.repositories.task_repository import get_task_by_id, update_task_status, get_tasks_by_project, get_tasks_filtered
+from app.models.task import TaskStatus
 
 
 def create_task_for_project(
@@ -99,22 +100,28 @@ def update_task_status_for_project(
 
 def get_tasks_for_project(
     db: Session,
+    *,
     project_id: int,
     current_user_id: int,
-) -> list[Task]:
-    membership = (
-        db.query(ProjectMember)
+    status: TaskStatus | None = None,
+    assigned_to: int | None = None,
+):
+    query = (
+        db.query(Task)
+        .join(
+            ProjectMember,
+            ProjectMember.project_id == Task.project_id,
+        )
         .filter(
             ProjectMember.project_id == project_id,
             ProjectMember.user_id == current_user_id,
         )
-        .first()
     )
 
-    if not membership:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not a member of this project",
-        )
+    if status is not None:
+        query = query.filter(Task.status == status.value)
 
-    return get_tasks_by_project(db, project_id)
+    if assigned_to is not None:
+        query = query.filter(Task.assigned_to_id == assigned_to)
+
+    return query.all()

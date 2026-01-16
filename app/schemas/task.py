@@ -21,11 +21,10 @@ class TaskResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class TaskStatus(str, Enum):
-    TODO = "TODO"
-    IN_PROGRESS = "IN_PROGRESS"
-    DONE = "DONE"
-
 
 class TaskUpdateStatus(BaseModel):
     status: TaskStatus
+
+class TaskFilter(BaseModel):
+    status: Optional[TaskStatus] = None
+    assigned_to: Optional[str] = None

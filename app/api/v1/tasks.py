@@ -9,9 +9,12 @@ from app.models.user import User
 from app.schemas.task import TaskUpdateStatus
 from app.services.task_service import update_task_status_for_project
 from app.services.task_service import get_tasks_for_project
+from app.schemas.task import TaskFilter
+from fastapi import Query
+from app.models.task import TaskStatus
+
 
 router = APIRouter(prefix="/projects/{project_id}/tasks", tags=["Tasks"])
-
 
 @router.post("", response_model=TaskResponse)
 def create_task_endpoint(
@@ -28,7 +31,6 @@ def create_task_endpoint(
         assigned_to_id=task_in.assigned_to_id,
         current_user_id=current_user.id,
     )
-
 
 @router.patch(
     "/{task_id}/status",
@@ -52,6 +54,8 @@ def update_task_status_endpoint(
 @router.get("", response_model=list[TaskResponse])
 def get_tasks_endpoint(
     project_id: int,
+    status: TaskStatus | None = Query(None),
+    assigned_to: int | None = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -59,4 +63,6 @@ def get_tasks_endpoint(
         db=db,
         project_id=project_id,
         current_user_id=current_user.id,
+        status=status,
+        assigned_to=assigned_to,
     )
