@@ -7,6 +7,7 @@ from app.models.task import Task
 from app.models.user import User
 from app.repositories.task_repository import get_task_by_id, update_task_status, get_tasks_by_project, get_tasks_filtered
 from app.models.task import TaskStatus
+from app.repositories.task_repository import soft_delete_task
 
 
 def create_task_for_project(
@@ -115,6 +116,7 @@ def get_tasks_for_project(
         .filter(
             ProjectMember.project_id == project_id,
             ProjectMember.user_id == current_user_id,
+            Task.is_deleted == False,
         )
     )
 
@@ -125,3 +127,45 @@ def get_tasks_for_project(
         query = query.filter(Task.assigned_to_id == assigned_to)
 
     return query.all()
+
+
+def delete_task_for_project(
+    db: Session,
+    *,
+    task_id: int,
+    project_id: int,
+    current_user_id: int,
+) -> None:
+    task = get_task_by_id(db, task_id)
+
+    if not task or task.project_id != project_id or task.is_deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found",
+        )
+
+    membership = (
+        db.query(ProjectMember)
+        .filter(
+            ProjectMember.project_id == project_id,
+            ProjectMember.user_id == current_user_id,
+        )
+        .first()
+    )
+
+    if not membership:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this project",
+        )
+
+    if (
+        membership.role != ProjectRole.OWNER
+        and task.created_by_id != current_user_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed to delete this task",
+        )
+
+    soft_delete_task(db, task)

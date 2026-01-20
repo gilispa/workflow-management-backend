@@ -12,6 +12,8 @@ from app.services.task_service import get_tasks_for_project
 from app.schemas.task import TaskFilter
 from fastapi import Query
 from app.models.task import TaskStatus
+from app.services.task_service import delete_task_for_project
+
 
 
 router = APIRouter(prefix="/projects/{project_id}/tasks", tags=["Tasks"])
@@ -65,4 +67,18 @@ def get_tasks_endpoint(
         current_user_id=current_user.id,
         status=status,
         assigned_to=assigned_to,
+    )
+
+@router.delete("/{task_id}", status_code=204)
+def delete_task_endpoint(
+    project_id: int,
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    delete_task_for_project(
+        db=db,
+        task_id=task_id,
+        project_id=project_id,
+        current_user_id=current_user.id,
     )

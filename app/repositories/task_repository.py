@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.task import Task
+from sqlalchemy import func
 
 
 def create_task(
@@ -24,8 +25,16 @@ def create_task(
     return task
 
 
-def get_task_by_id(db: Session, task_id: int) -> Task | None:
-    return db.query(Task).filter(Task.id == task_id).first()
+def get_task_by_id(db: Session, task_id: int):
+    return (
+        db.query(Task)
+        .filter(
+            Task.id == task_id,
+            Task.is_deleted == False,
+        )
+        .first()
+    )
+
 
 
 def update_task_status(
@@ -58,3 +67,14 @@ def get_tasks_filtered(
         query = query.filter(Task.assigned_to_id == assignee_id)
 
     return query.all()
+
+
+def soft_delete_task(
+    db: Session,
+    task: Task,
+) -> Task:
+    task.is_deleted = True
+    task.deleted_at = func.now()
+    db.commit()
+    db.refresh(task)
+    return task
