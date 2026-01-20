@@ -5,7 +5,7 @@ from app.repositories.task_repository import create_task
 from app.models.project_member import ProjectMember, ProjectRole
 from app.models.task import Task
 from app.models.user import User
-from app.repositories.task_repository import get_task_by_id, update_task_status, get_tasks_by_project, get_tasks_filtered
+from app.repositories.task_repository import get_task_by_id, update_task_status
 from app.models.task import TaskStatus
 from app.repositories.task_repository import soft_delete_task
 

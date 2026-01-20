@@ -47,28 +47,6 @@ def update_task_status(
     db.refresh(task)
     return task
 
-def get_tasks_by_project(db: Session, project_id: int) -> list[Task]:
-    return db.query(Task).filter(Task.project_id == project_id).all()
-
-
-def get_tasks_filtered(
-    db: Session,
-    *,
-    project_id: int,
-    status=None,
-    assignee_id=None,
-):
-    query = db.query(Task).filter(Task.project_id == project_id)
-
-    if status is not None:
-        query = query.filter(Task.status == status)
-
-    if assignee_id is not None:
-        query = query.filter(Task.assigned_to_id == assignee_id)
-
-    return query.all()
-
-
 def soft_delete_task(
     db: Session,
     task: Task,
