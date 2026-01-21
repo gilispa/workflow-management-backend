@@ -44,6 +44,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Downgrade schema."""
     op.drop_column('tasks', 'deleted_at')
     op.drop_column('tasks', 'is_deleted')
